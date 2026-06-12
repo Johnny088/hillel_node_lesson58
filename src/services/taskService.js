@@ -15,86 +15,86 @@ export const readTasks = async () => {
   }
 };
 
-// export const writeTasks = async tasks => {
-//   await fs.writeFile(DB_PATH, JSON.stringify(tasks, null, 2));
-// };
+export const writeTasks = async tasks => {
+  await fs.writeFile(DB_PATH, JSON.stringify(tasks, null, 2));
+};
 
-// export const getById = async id => {
-//   if (Number.isNaN(id)) {
-//     console.log(chalk.red('Id is required and must be a number'));
-//     return;
-//   }
+export const getById = async id => {
+  if (Number.isNaN(id)) {
+    console.log(chalk.red('Id is required and must be a number'));
+    return;
+  }
 
-//   const tasks = await readTasks();
+  const tasks = await readTasks();
 
-//   const task = tasks.find(task => task.id === id);
-//   if (!task) {
-//     console.log(chalk.red(`user with such id: '${id}' doesn't exist`));
-//     return;
-//   }
-//   return task;
-// };
+  const task = tasks.find(task => task.id === id);
+  if (!task) {
+    console.log(chalk.red(`task with such id: '${id}' doesn't exist`));
+    return;
+  }
+  return task;
+};
 
-// export const addNewTask = async newTask => {
-//   if (newTask.trim() === '') {
-//     console.log('new task can not be empty');
-//     return;
-//   }
-//   const tasks = await readTasks();
+export const addNewTask = async newTask => {
+  if (!newTask || newTask.trim() === '') {
+    console.log('new task can not be empty');
+    return;
+  }
+  const tasks = await readTasks();
 
-//   const id =
-//     (tasks.length === 0
-//       ? 1
-//       : tasks.reduce((acc, task) => {
-//           return task.id > acc ? task.id : acc;
-//         }, 0)) + 1;
+  const id =
+    (tasks.length === 0
+      ? 1
+      : tasks.reduce((acc, task) => {
+          return task.id > acc ? task.id : acc;
+        }, 0)) + 1;
 
-//   tasks.push({ title: newTask, id, completed: false });
-//   await writeTasks(tasks);
-// };
+  tasks.push({ title: newTask, id, completed: false });
+  await writeTasks(tasks);
+};
 
-// export const deleteTask = async id => {
-//   if (Number.isNaN(id)) {
-//     console.log(chalk.red('Id is required and must be a number'));
-//     return;
-//   }
+export const deleteTask = async id => {
+  if (Number.isNaN(id)) {
+    console.log(chalk.red('Id is required and must be a number'));
+    return false;
+  }
 
-//   const tasks = await readTasks();
+  const tasks = await readTasks();
 
-//   const checkId = await tasks.find(task => task.id === id);
-//   if (!checkId) {
-//     console.log(chalk.red(`task with a such id '${id}' doesn't exist `));
-//     return;
-//   }
+  const checkId = await tasks.find(task => task.id === id);
+  if (!checkId) {
+    console.log(chalk.red(`task with a such id '${id}' doesn't exist `));
+    return false;
+  }
 
-//   const filteredTasks = tasks.filter(task => task.id !== id);
+  const filteredTasks = tasks.filter(task => task.id !== id);
 
-//   await writeTasks(filteredTasks);
+  await writeTasks(filteredTasks);
 
-//   console.log(chalk.red(`Task with an id '${id}' is deleted`));
-//   console.log(checkId);
-// };
+  console.log(chalk.red(`Task with an id '${id}' is deleted`));
+  return true;
+};
 
-// export const updateTask = async (id, newTask) => {
-//   if (Number.isNaN(id)) {
-//     console.log(chalk.red('Id is required and must be a number'));
-//     return false;
-//   }
+export const updateTask = async (id, newTask) => {
+  if (Number.isNaN(id)) {
+    console.log(chalk.red('Id is required and must be a number'));
+    return false;
+  }
 
-//   const tasks = await readTasks();
+  const tasks = await readTasks();
 
-//   const checkId = tasks.find(task => task.id === id);
-//   if (!checkId) {
-//     console.log(chalk.red(`task with a such id '${id}' doesn't exist `));
-//     return false;
-//   }
+  const checkId = tasks.find(task => task.id === id);
+  if (!checkId) {
+    console.log(chalk.red(`task with a such id '${id}' doesn't exist `));
+    return false;
+  }
 
-//   const updatedTasks = tasks.map(task =>
-//     task.id === id ? { ...task, ...newTask } : task,
-//   );
+  const updatedTasks = tasks.map(task =>
+    task.id === id ? { ...task, ...newTask } : task,
+  );
 
-//   await writeTasks(updatedTasks);
-//   console.log(chalk.green(`Task with id '${id}' is updated`));
-
-//   console.log(newTask);
-// };
+  await writeTasks(updatedTasks);
+  console.log(chalk.green(`Task with id '${id}' is updated`));
+  return true;
+  //   console.log(newTask);
+};

@@ -1,0 +1,26 @@
+{
+  "name": "hillel_node_lesson58",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Johnny088/hillel_node_lesson58#readme",
+  "bugs": {
+    "url": "https://github.com/Johnny088/hillel_node_lesson58/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Johnny088/hillel_node_lesson58.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/server.js"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2"
+  }
+}

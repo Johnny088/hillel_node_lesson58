@@ -1,12 +1,6 @@
 import http from 'node:http';
 
-import {
-  addNewTask,
-  deleteTask,
-  getById,
-  readTasks,
-  updateTask,
-} from './services/taskService.js';
+import { readTasks, writeTasks } from './services/taskService.js';
 
 const PORT = 8000;
 
@@ -18,12 +12,18 @@ const server = http.createServer(async (req, res) => {
     res.end(JSON.stringify(tasks));
   } else if (req.url.startsWith('/tasks/') && req.method === 'GET') {
     const urlParts = req.url.split('/');
-    const taskId = urlParts[2];
+    const id = Number(urlParts[2]);
+    if (Number.isNaN(id)) {
+      res.statusCode = 404;
+      res.end('Id is required and must be a number');
+      return;
+    }
+    const tasks = await readTasks();
 
-    const task = await getById(Number(taskId));
+    const task = tasks.find(task => task.id === id);
     if (!task) {
       res.statusCode = 404;
-      res.end(JSON.stringify({ error: 'The task was not found' }));
+      res.end(`such '${id}' doesn't exist`);
       return;
     }
     res.setHeader('Content-Type', 'Application/json');
@@ -35,29 +35,61 @@ const server = http.createServer(async (req, res) => {
     });
 
     req.on('end', async () => {
-      const parsedBody = JSON.parse(body);
-      const title = parsedBody;
+      const { title } = JSON.parse(body);
 
-      await addNewTask(title);
+      if (!title || title.trim() === '') {
+        console.log('new task can not be empty');
+        res.statusCode = 400;
+        res.end('the title is required and can not be empty');
+        return;
+      }
+      const tasks = await readTasks();
+
+      const id =
+        (tasks.length === 0
+          ? 1
+          : tasks.reduce((acc, task) => {
+              return task.id > acc ? task.id : acc;
+            }, 0)) + 1;
+
+      tasks.push({ title, id, completed: false });
+      await writeTasks(tasks);
+
       res.statusCode = 201;
       res.end('data recieved');
     });
   } else if (req.url.startsWith('/tasks/') && req.method === 'DELETE') {
     const urlParts = req.url.split('/');
-    const id = urlParts[2];
+    const id = Number(urlParts[2]);
+    if (Number.isNaN(id)) {
+      console.log('Id is required and must be a number');
+      res.statusCode = 404;
+      res.end('Id is required and must be a number');
+      return;
+    }
 
-    const result = await deleteTask(Number(id));
-    if (!result) {
+    const tasks = await readTasks();
+
+    const filteredTasks = tasks.filter(task => task.id !== id);
+    if (tasks.length === filteredTasks.length) {
       res.statusCode = 404;
       res.end(`such '${id}' doesn't exist`);
       return;
     }
+
+    await writeTasks(filteredTasks);
+
+    console.log(chalk.red(`Task with an id '${id}' is deleted`));
     res.statusCode = 204;
     res.end();
   } else if (req.url.startsWith('/tasks/') && req.method === 'PATCH') {
     const urlParts = req.url.split('/');
-    const id = urlParts[2];
-
+    const id = Number(urlParts[2]);
+    if (Number.isNaN(id)) {
+      res.statusCode = 404;
+      res.end('Id is required and must be a number');
+      return;
+    }
     let body = '';
 
     req.on('data', chunk => {
@@ -66,13 +98,23 @@ const server = http.createServer(async (req, res) => {
 
     req.on('end', async () => {
       const parsedBody = JSON.parse(body);
-      const result = await updateTask(Number(id), parsedBody);
-      if (!result) {
+
+      const tasks = await readTasks();
+
+      const checkId = tasks.find(task => task.id === id);
+      if (!checkId) {
         res.statusCode = 404;
-        res.end(`such id: '${id}' doesn't exist`);
+        res.end(`such '${id}' doesn't exist`);
         return;
       }
-      res.end(`task with the id: '${id}' was updated`);
+
+      const updatedTasks = tasks.map(task =>
+        task.id === id ? { ...task, ...parsedBody } : task,
+      );
+
+      await writeTasks(updatedTasks);
+      res.statusCode = 201;
+      res.end(`Task with id '${id}' is updated`);
     });
   } else {
     res.statusCode = 404;

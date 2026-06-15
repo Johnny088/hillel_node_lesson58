@@ -10,7 +10,6 @@ export const readTasks = async () => {
 
     return parsedData;
   } catch (error) {
-    console.log(chalk.red(error));
     return [];
   }
 };

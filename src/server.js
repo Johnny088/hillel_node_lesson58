@@ -6,18 +6,21 @@ const PORT = 8000;
 
 const server = http.createServer(async (req, res) => {
   if (req.url === '/tasks' && req.method === 'GET') {
-    console.log(req.url);
     const tasks = await readTasks();
+
     res.setHeader('Content-Type', 'application/json');
+
     res.end(JSON.stringify(tasks));
   } else if (req.url.startsWith('/tasks/') && req.method === 'GET') {
     const urlParts = req.url.split('/');
     const id = Number(urlParts[2]);
+
     if (Number.isNaN(id)) {
-      res.statusCode = 404;
+      res.statusCode = 400;
       res.end('Id is required and must be a number');
       return;
     }
+
     const tasks = await readTasks();
 
     const task = tasks.find(task => task.id === id);
@@ -63,7 +66,7 @@ const server = http.createServer(async (req, res) => {
     const id = Number(urlParts[2]);
     if (Number.isNaN(id)) {
       console.log('Id is required and must be a number');
-      res.statusCode = 404;
+      res.statusCode = 400;
       res.end('Id is required and must be a number');
       return;
     }
@@ -79,14 +82,13 @@ const server = http.createServer(async (req, res) => {
 
     await writeTasks(filteredTasks);
 
-    console.log(chalk.red(`Task with an id '${id}' is deleted`));
-    res.statusCode = 204;
-    res.end();
+    res.statusCode = 200;
+    res.end('the task was deleted');
   } else if (req.url.startsWith('/tasks/') && req.method === 'PATCH') {
     const urlParts = req.url.split('/');
     const id = Number(urlParts[2]);
     if (Number.isNaN(id)) {
-      res.statusCode = 404;
+      res.statusCode = 400;
       res.end('Id is required and must be a number');
       return;
     }
@@ -113,7 +115,7 @@ const server = http.createServer(async (req, res) => {
       );
 
       await writeTasks(updatedTasks);
-      res.statusCode = 201;
+      res.statusCode = 200;
       res.end(`Task with id '${id}' is updated`);
     });
   } else {
